@@ -2,37 +2,93 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Shadow's MultiTwitch - Low Latency</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MultiTwitch Low Latency Mode</title>
   <style>
     body {
       margin: 0;
-      background: #111;
+      background: #0e0e0e;
+      color: white;
+      font-family: sans-serif;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
     }
-    .player {
-      flex: 1 1 50%;
-      min-width: 400px;
-      height: 50vh;
+
+    .grid {
+      display: grid;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .player-wrapper {
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+
+    .twitch-player, .twitch-chat {
+      width: 100%;
+    }
+
+    .twitch-player {
+      height: 300px;
+    }
+
+    .twitch-chat {
+      height: 250px;
+      border: none;
+    }
+
+    @media(min-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      }
     }
   </style>
   <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 </head>
 <body>
+  <h1 style="text-align:center; padding: 10px;">MultiTwitch Low Latency</h1>
+  <div class="grid" id="multi-container"></div>
   <script>
-    const channels = window.location.pathname.split('/').filter(Boolean);
+    const urlParams = new URLSearchParams(window.location.search);
+    let channels = [];
+
+    // Grab all path segments
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    const baseIndex = pathSegments.indexOf("multitwitch");
+    if (urlParams.has('channels')) {
+      channels = urlParams.get('channels').split(',');
+    } else {
+      channels = pathSegments.slice(baseIndex + 1);
+    }
+
+    const container = document.getElementById('multi-container');
 
     channels.forEach(channel => {
-      const container = document.createElement('div');
-      container.className = 'player';
-      container.id = `player-${channel}`;
-      document.body.appendChild(container);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'player-wrapper';
 
-      const player = new Twitch.Player(container.id, {
+      const playerDiv = document.createElement('div');
+      playerDiv.className = 'twitch-player';
+      playerDiv.id = `player-${channel}`;
+      wrapper.appendChild(playerDiv);
+
+      const chatIframe = document.createElement('iframe');
+      chatIframe.className = 'twitch-chat';
+      chatIframe.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${location.hostname}`;
+      wrapper.appendChild(chatIframe);
+
+      container.appendChild(wrapper);
+
+      const player = new Twitch.Player(playerDiv.id, {
         channel,
+        parent: [location.hostname],
         width: '100%',
         height: '100%',
-        parent: [location.hostname],
         muted: true
       });
 
@@ -48,7 +104,7 @@
         }
 
         setInterval(() => {
-          const video = container.querySelector('video');
+          const video = playerDiv.querySelector('video');
           if (video?.seekable?.length) {
             const liveEdge = video.seekable.end(0);
             const delay = liveEdge - video.currentTime;
