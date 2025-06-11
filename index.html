@@ -127,7 +127,8 @@
       cursor: pointer;
     }
   </style>
-  <script src="https://player.twitch.tv/js/embed/v1.js">  document.getElementById('chat-add-stream').onclick = addStreamFromInput;
+  <script src="https://player.twitch.tv/js/embed/v1.js"><script>
+document.getElementById('chat-add-stream').onclick = addStreamFromInput;
 document.getElementById('chat-stream-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') addStreamFromInput();
 });
@@ -154,15 +155,6 @@ function addStreamFromInput() {
     updateHistoryDropdown();
   }
 }
-  }
-}
-    if (!recentHistory.includes(channel)) {
-      recentHistory.unshift(channel);
-      if (recentHistory.length > 10) recentHistory.pop();
-      updateHistoryDropdown();
-    }
-  }
-};
 
 function updateHistoryDropdown() {
   const dropdown = document.getElementById('history-dropdown');
@@ -183,8 +175,6 @@ document.getElementById('history-dropdown').onchange = (e) => {
     if (channels.length === 1) chatTabs.firstChild?.click();
   }
 };
-    }
-  };
 </script>
 </head>
 <body>
