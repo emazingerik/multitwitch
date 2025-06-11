@@ -26,7 +26,8 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      align-content: flex-start;
+      align-items: center;
+      align-content: center;
       gap: 0 20px;
       padding: 10px;
       height: 100%;
@@ -41,7 +42,6 @@
       aspect-ratio: 16 / 9;
       margin: 0 auto;
       width: 100%;
-      max-width: 48%;
       flex: 1 1 48%;
     }
     }
@@ -117,10 +117,28 @@
       max-width: 100%;
     }
   }
+  }
 </style>
   <script src="https://player.twitch.tv/js/embed/v1.js">function adjustSinglePlayerLayout() {
   const allPlayers = document.querySelectorAll('.player-wrapper');
   allPlayers.forEach(p => p.style.maxWidth = allPlayers.length === 1 ? '100%' : '48%');
+}
+
+const observer = new MutationObserver(adjustSinglePlayerLayout);
+observer.observe(document.getElementById('multi-container'), { childList: true });
+
+adjustSinglePlayerLayout();
+function adjustSinglePlayerLayout() {
+  const allPlayers = document.querySelectorAll('.player-wrapper');
+  allPlayers.forEach(p => {
+    if (allPlayers.length === 1) {
+      p.style.maxWidth = '100%';
+      p.style.flex = '1 1 100%';
+    } else {
+      p.style.maxWidth = '48%';
+      p.style.flex = '1 1 48%';
+    }
+  });
 }
 
 const observer = new MutationObserver(adjustSinglePlayerLayout);
