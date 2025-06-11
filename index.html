@@ -27,7 +27,7 @@
       flex-wrap: wrap;
       justify-content: center;
       align-content: flex-start;
-      gap: 10px 20px;
+      gap: 0 20px;
       padding: 10px;
       height: 100%;
       overflow-y: auto;
@@ -38,10 +38,12 @@
       position: relative;
       border-radius: 8px;
       background: black;
-      flex: 1 1 48%;
-      max-width: 48%;
-      margin: 0 auto;
       aspect-ratio: 16 / 9;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 48%;
+      flex: 1 1 48%;
+    }
     }
     .twitch-player {
       width: 100%;
@@ -116,27 +118,21 @@
     }
   }
 </style>
-  <script src="https://player.twitch.tv/js/embed/v1.js">function removeStream(channel) {
-  channels = channels.filter(c => c !== channel);
-
-  const wrapper = document.querySelector(`.player-wrapper[data-channel="${channel}"]`);
-  if (wrapper) wrapper.remove();
-
-  const tab = Array.from(chatTabs.children).find(t => t.textContent.includes(channel));
-  if (tab) tab.remove();
-
-  if (chatFrame.src.includes(channel)) {
-    chatFrame.src = '';
-    const remainingTab = chatTabs.querySelector('.chat-tab');
-    if (remainingTab) remainingTab.click();
-  }
+  <script src="https://player.twitch.tv/js/embed/v1.js">function adjustSinglePlayerLayout() {
+  const allPlayers = document.querySelectorAll('.player-wrapper');
+  allPlayers.forEach(p => p.style.maxWidth = allPlayers.length === 1 ? '100%' : '48%');
 }
+
+const observer = new MutationObserver(adjustSinglePlayerLayout);
+observer.observe(document.getElementById('multi-container'), { childList: true });
+
+adjustSinglePlayerLayout();
 </script>
 </head>
 <body>
-  <div id="main" style="gap: 10px; position: relative;">
+  <div id="main" style="display: flex; gap: 10px; height: 100vh; position: relative;">
     <div id="multi-container"></div>
-    <div id="chat-panel" style="display: flex; position: relative; z-index: 1;">
+    <div id="chat-panel" style="display: flex; flex-direction: column; position: relative; z-index: 1; height: 100%;">
       <div style="padding: 10px; display: flex; gap: 8px; align-items: center; background: #1a1a1a; flex-direction: column;">
         <div style="display: flex; width: 100%; gap: 8px;">
           <input type="text" id="chat-stream-input" placeholder="Enter Twitch channel..." style="flex: 1; padding: 6px; border-radius: 4px; border: none; font-size: 14px;" />
