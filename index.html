@@ -28,7 +28,7 @@
       justify-content: center;
       align-items: center;
       align-content: center;
-      gap: 0 20px;
+      gap: 20px;
       height: 100%;
       box-sizing: border-box;
     }
@@ -38,9 +38,9 @@
       background: black;
       aspect-ratio: 16 / 9;
       margin: 0 auto;
-      flex: 1 1 48%;
-      max-width: 48%;
       width: 100%;
+      max-width: 48%;
+      flex: 1 1 48%;
     }
     }
     .twitch-player {
@@ -154,6 +154,27 @@ function adjustLayout() {
       p.style.flex = '1 1 48%';
     }
   });
+}
+
+const layoutObserver = new MutationObserver(adjustLayout);
+layoutObserver.observe(document.getElementById('multi-container'), { childList: true });
+
+adjustLayout();
+function adjustLayout() {
+  const allPlayers = document.querySelectorAll('.player-wrapper');
+  allPlayers.forEach(p => {
+    if (allPlayers.length === 1) {
+      p.style.maxWidth = '100%';
+      p.style.flex = '1 1 100%';
+    } else {
+      p.style.maxWidth = '48%';
+      p.style.flex = '1 1 48%';
+    }
+  });
+  const container = document.getElementById('multi-container');
+  container.style.justifyContent = 'center';
+  container.style.alignItems = 'center';
+  container.style.alignContent = 'center';
 }
 
 const layoutObserver = new MutationObserver(adjustLayout);
