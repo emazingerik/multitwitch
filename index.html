@@ -14,34 +14,6 @@
       font-family: sans-serif;
       overflow: hidden;
     }
-    #controls {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1a1a1a;
-      padding: 10px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 1000;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-    #stream-input {
-      padding: 5px;
-      font-size: 14px;
-      border-radius: 4px;
-      border: none;
-    }
-    #add-stream {
-      padding: 5px 10px;
-      background: #272727;
-      border: none;
-      color: white;
-      cursor: pointer;
-      border-radius: 4px;
-    }
     #main {
       display: flex;
       width: 100%;
@@ -127,182 +99,172 @@
       cursor: pointer;
     }
   </style>
-  <script src="https://player.twitch.tv/js/embed/v1.js"><script>
-document.getElementById('chat-add-stream').onclick = addStreamFromInput;
-document.getElementById('chat-stream-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') addStreamFromInput();
-});
-
-function addStreamFromInput() {
-  const chatInput = document.getElementById('chat-stream-input');
-  const channel = chatInput.value.trim().toLowerCase();
-  if (!channel) {
-    alert('Please enter a channel name.');
-    return;
-  }
-  if (channels.includes(channel)) {
-    alert(`Channel "${channel}" is already added.`);
-    chatInput.value = '';
-    return;
-  }
-  channels.push(channel);
-  createPlayer(channel);
-  if (channels.length === 1) chatTabs.firstChild?.click();
-  chatInput.value = '';
-  if (!recentHistory.includes(channel)) {
-    recentHistory.unshift(channel);
-    if (recentHistory.length > 10) recentHistory.pop();
-    updateHistoryDropdown();
-  }
-}
-
-function updateHistoryDropdown() {
-  const dropdown = document.getElementById('history-dropdown');
-  dropdown.innerHTML = '<option value="">Recent Streamers</option>';
-  recentHistory.forEach(user => {
-    const option = document.createElement('option');
-    option.value = user;
-    option.textContent = user;
-    dropdown.appendChild(option);
-  });
-}
-
-document.getElementById('history-dropdown').onchange = (e) => {
-  const value = e.target.value;
-  if (value && !channels.includes(value)) {
-    channels.push(value);
-    createPlayer(value);
-    if (channels.length === 1) chatTabs.firstChild?.click();
-  }
-};
-</script>
+  <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 </head>
 <body>
-  <!-- Removed bottom controls to avoid duplication -->
   <div id="main">
     <div id="multi-container"></div>
     <div id="chat-panel">
       <div style="padding: 10px; display: flex; gap: 8px; align-items: center; background: #1a1a1a; flex-direction: column;">
-  <div style="display: flex; width: 100%; gap: 8px;">
-  <input type="text" id="chat-stream-input" placeholder="Enter Twitch channel..." style="flex: 1; padding: 6px; border-radius: 4px; border: none; font-size: 14px;" />
-  <button id="chat-add-stream" style="padding: 6px 10px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer;">+</button>
-</div>
-<select id="history-dropdown" style="width: 100%; padding: 5px; border-radius: 4px; font-size: 14px; background: #111; color: white;">
-  <option value="">Recent Streamers</option>
-</select>
-</div>
-<div id="chat-tabs"></div>
+        <div style="display: flex; width: 100%; gap: 8px;">
+          <input type="text" id="chat-stream-input" placeholder="Enter Twitch channel..." style="flex: 1; padding: 6px; border-radius: 4px; border: none; font-size: 14px;" />
+          <button id="chat-add-stream" style="padding: 6px 10px; background: #444; color: white; border: none; border-radius: 4px; cursor: pointer;">+</button>
+        </div>
+        <select id="history-dropdown" style="width: 100%; padding: 5px; border-radius: 4px; font-size: 14px; background: #111; color: white;">
+          <option value="">Recent Streamers</option>
+        </select>
+      </div>
+      <div id="chat-tabs"></div>
       <iframe id="chat-frame" src="" allowfullscreen></iframe>
       <button id="chat-toggle">Toggle Chat</button>
     </div>
   </div>
-
   <script>
-    const container = document.getElementById('multi-container');
-    const chatTabs = document.getElementById('chat-tabs');
-    const chatFrame = document.getElementById('chat-frame');
-    const chatToggle = document.getElementById('chat-toggle');
-    const streamInput = document.getElementById('stream-input');
-    const addStreamBtn = document.getElementById('add-stream');
     let channels = [];
-let recentHistory = [];
+    let recentHistory = [];
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('channels')) {
-      const queryChannels = urlParams.get('channels').split(',').map(c => c.trim().toLowerCase());
-      queryChannels.forEach(channel => {
-        if (!channels.includes(channel)) {
-          channels.push(channel);
-          createPlayer(channel);
-        }
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('multi-container');
+      const chatTabs = document.getElementById('chat-tabs');
+      const chatFrame = document.getElementById('chat-frame');
+      const chatToggle = document.getElementById('chat-toggle');
+      const chatInput = document.getElementById('chat-stream-input');
+      const chatAddBtn = document.getElementById('chat-add-stream');
+      const historyDropdown = document.getElementById('history-dropdown');
+
+      chatAddBtn.onclick = addStreamFromInput;
+      chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') addStreamFromInput();
       });
-      if (channels.length > 0) chatTabs.firstChild?.click();
-    }
 
-    function createChatTab(channel) {
-      const tab = document.createElement('button');
-      tab.className = 'chat-tab';
-      tab.textContent = channel;
-      tab.onclick = () => {
-        document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        chatFrame.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${location.hostname}`;
-      };
-      chatTabs.appendChild(tab);
-    }
-
-    function createPlayer(channel) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'player-wrapper';
-
-      const playerDiv = document.createElement('div');
-      playerDiv.className = 'twitch-player';
-      playerDiv.id = `player-${channel}`;
-      wrapper.appendChild(playerDiv);
-
-      const ffBtn = document.createElement('button');
-      ffBtn.textContent = 'Fast Forward';
-      ffBtn.className = 'fast-forward-btn';
-      ffBtn.onclick = () => {
-        const video = playerDiv.querySelector('video');
-        if (video && video.seekable.length > 0) {
-          video.currentTime = video.seekable.end(0) - 0.1;
+      historyDropdown.onchange = (e) => {
+        const value = e.target.value;
+        if (value && !channels.includes(value)) {
+          channels.push(value);
+          createPlayer(value);
+          if (channels.length === 1) chatTabs.firstChild?.click();
         }
       };
-      wrapper.appendChild(ffBtn);
 
-      container.appendChild(wrapper);
-
-      const player = new Twitch.Player(playerDiv.id, {
-        channel,
-        parent: [location.hostname],
-        width: '100%',
-        height: '100%',
-        muted: true
-      });
-
-      player.addEventListener(Twitch.Player.READY, () => {
-        try {
-          const qualities = player.getQualities();
-          if (qualities && qualities.length > 0) {
-            player.setQuality(qualities[0].group);
-            console.log(`[Shadow Script] Max quality applied to ${channel}`);
-          }
-        } catch (err) {
-          console.warn(`[Shadow Script] Couldn't set quality for ${channel}`, err);
+      function addStreamFromInput() {
+        const channel = chatInput.value.trim().toLowerCase();
+        if (!channel) {
+          alert('Please enter a channel name.');
+          return;
         }
-
-        setInterval(() => {
-          const video = playerDiv.querySelector('video');
-          if (video?.seekable?.length) {
-            const liveEdge = video.seekable.end(0);
-            const delay = liveEdge - video.currentTime;
-            if (delay > 10) {
-              console.log(`[Shadow Script] ${channel} is ${delay.toFixed(1)}s behind. Consider refreshing.`);
-            }
-            const bonusBtn = document.querySelector('[data-test-selector="claimable-bonus-button__icon"]');
-            if (bonusBtn) bonusBtn.click();
-          }
-        }, 30000);
-      });
-
-      createChatTab(channel);
-    }
-
-    chatToggle.onclick = () => {
-      const panel = document.getElementById('chat-panel');
-      panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
-    }
-
-    addStreamBtn.onclick = () => {
-      const channel = streamInput.value.trim().toLowerCase();
-      if (channel && !channels.includes(channel)) {
+        if (channels.includes(channel)) {
+          alert(`Channel "${channel}" is already added.`);
+          chatInput.value = '';
+          return;
+        }
         channels.push(channel);
         createPlayer(channel);
         if (channels.length === 1) chatTabs.firstChild?.click();
-        streamInput.value = '';
+        chatInput.value = '';
+        if (!recentHistory.includes(channel)) {
+          recentHistory.unshift(channel);
+          if (recentHistory.length > 10) recentHistory.pop();
+          updateHistoryDropdown();
+        }
       }
-    }
+
+      function updateHistoryDropdown() {
+        historyDropdown.innerHTML = '<option value="">Recent Streamers</option>';
+        recentHistory.forEach(user => {
+          const option = document.createElement('option');
+          option.value = user;
+          option.textContent = user;
+          historyDropdown.appendChild(option);
+        });
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('channels')) {
+        const queryChannels = urlParams.get('channels').split(',').map(c => c.trim().toLowerCase());
+        queryChannels.forEach(channel => {
+          if (!channels.includes(channel)) {
+            channels.push(channel);
+            createPlayer(channel);
+          }
+        });
+        if (channels.length > 0) chatTabs.firstChild?.click();
+      }
+
+      function createChatTab(channel) {
+        const tab = document.createElement('button');
+        tab.className = 'chat-tab';
+        tab.textContent = channel;
+        tab.onclick = () => {
+          document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          chatFrame.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${location.hostname}`;
+        };
+        chatTabs.appendChild(tab);
+      }
+
+      function createPlayer(channel) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'player-wrapper';
+
+        const playerDiv = document.createElement('div');
+        playerDiv.className = 'twitch-player';
+        playerDiv.id = `player-${channel}`;
+        wrapper.appendChild(playerDiv);
+
+        const ffBtn = document.createElement('button');
+        ffBtn.textContent = 'Fast Forward';
+        ffBtn.className = 'fast-forward-btn';
+        ffBtn.onclick = () => {
+          const video = playerDiv.querySelector('video');
+          if (video && video.seekable.length > 0) {
+            video.currentTime = video.seekable.end(0) - 0.1;
+          }
+        };
+        wrapper.appendChild(ffBtn);
+
+        container.appendChild(wrapper);
+
+        const player = new Twitch.Player(playerDiv.id, {
+          channel,
+          parent: [location.hostname],
+          width: '100%',
+          height: '100%',
+          muted: true
+        });
+
+        player.addEventListener(Twitch.Player.READY, () => {
+          try {
+            const qualities = player.getQualities();
+            if (qualities && qualities.length > 0) {
+              player.setQuality(qualities[0].group);
+              console.log(`[Shadow Script] Max quality applied to ${channel}`);
+            }
+          } catch (err) {
+            console.warn(`[Shadow Script] Couldn't set quality for ${channel}`, err);
+          }
+
+          setInterval(() => {
+            const video = playerDiv.querySelector('video');
+            if (video?.seekable?.length) {
+              const liveEdge = video.seekable.end(0);
+              const delay = liveEdge - video.currentTime;
+              if (delay > 10) {
+                console.log(`[Shadow Script] ${channel} is ${delay.toFixed(1)}s behind. Consider refreshing.`);
+              }
+              const bonusBtn = document.querySelector('[data-test-selector="claimable-bonus-button__icon"]');
+              if (bonusBtn) bonusBtn.click();
+            }
+          }, 30000);
+        });
+
+        createChatTab(channel);
+      }
+
+      chatToggle.onclick = () => {
+        const panel = document.getElementById('chat-panel');
+        panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+      };
+    });
   </script>
 </body>
 </html>
