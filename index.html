@@ -24,7 +24,7 @@
     #multi-container {
       flex: 1;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       padding: 10px;
       overflow: hidden;
@@ -99,7 +99,22 @@
       cursor: pointer;
     }
   </style>
-  <script src="https://player.twitch.tv/js/embed/v1.js"></script>
+  <script src="https://player.twitch.tv/js/embed/v1.js">function removeStream(channel) {
+  channels = channels.filter(c => c !== channel);
+
+  const wrapper = document.querySelector(`.player-wrapper[data-channel="${channel}"]`);
+  if (wrapper) wrapper.remove();
+
+  const tab = Array.from(chatTabs.children).find(t => t.textContent.includes(channel));
+  if (tab) tab.remove();
+
+  if (chatFrame.src.includes(channel)) {
+    chatFrame.src = '';
+    const remainingTab = chatTabs.querySelector('.chat-tab');
+    if (remainingTab) remainingTab.click();
+  }
+}
+</script>
 </head>
 <body>
   <div id="main">
@@ -199,12 +214,23 @@
           tab.classList.add('active');
           chatFrame.src = `https://www.twitch.tv/embed/${channel}/chat?parent=${location.hostname}`;
         };
+        const closeTab = document.createElement('span');
+        closeTab.textContent = ' ✕';
+        closeTab.style.cursor = 'pointer';
+        closeTab.style.marginLeft = '6px';
+        closeTab.style.color = '#f66';
+        closeTab.onclick = (e) => {
+          e.stopPropagation();
+          removeStream(channel);
+        };
+        tab.appendChild(closeTab);
         chatTabs.appendChild(tab);
       }
 
       function createPlayer(channel) {
         const wrapper = document.createElement('div');
         wrapper.className = 'player-wrapper';
+        wrapper.setAttribute('data-channel', channel);
 
         const playerDiv = document.createElement('div');
         playerDiv.className = 'twitch-player';
@@ -221,6 +247,32 @@
           }
         };
         wrapper.appendChild(ffBtn);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '✕';
+        removeBtn.style.position = 'absolute';
+        removeBtn.style.top = '10px';
+        removeBtn.style.left = '10px';
+        removeBtn.style.background = 'rgba(255, 0, 0, 0.6)';
+        removeBtn.style.border = 'none';
+        removeBtn.style.color = 'white';
+        removeBtn.style.padding = '4px 8px';
+        removeBtn.style.borderRadius = '4px';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.style.fontSize = '12px';
+        removeBtn.style.opacity = '0';
+        removeBtn.style.transition = 'opacity 0.2s ease';
+        removeBtn.onclick = () => removeStream(channel);
+        wrapper.appendChild(removeBtn);
+
+        wrapper.addEventListener('mouseenter', () => {
+          ffBtn.style.opacity = '1';
+          removeBtn.style.opacity = '1';
+        });
+        wrapper.addEventListener('mouseleave', () => {
+          ffBtn.style.opacity = '0';
+          removeBtn.style.opacity = '0';
+        });
 
         container.appendChild(wrapper);
 
