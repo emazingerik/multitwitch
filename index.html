@@ -103,6 +103,10 @@
       border: none;
       color: white;
       cursor: pointer;
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      z-index: 9999;
     }
   @media (max-width: 1200px) {
     .player-wrapper {
@@ -131,7 +135,7 @@
 <body>
   <div id="main">
     <div id="multi-container"></div>
-    <div id="chat-panel">
+    <div id="chat-panel" style="display: flex;">
       <div style="padding: 10px; display: flex; gap: 8px; align-items: center; background: #1a1a1a; flex-direction: column;">
         <div style="display: flex; width: 100%; gap: 8px;">
           <input type="text" id="chat-stream-input" placeholder="Enter Twitch channel..." style="flex: 1; padding: 6px; border-radius: 4px; border: none; font-size: 14px;" />
@@ -331,6 +335,7 @@
       chatToggle.onclick = () => {
         const panel = document.getElementById('chat-panel');
         panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+        chatToggle.textContent = panel.style.display === 'none' ? 'Show Chat' : 'Hide Chat';
       };
     });
   </script>
