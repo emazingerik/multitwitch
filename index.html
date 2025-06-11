@@ -24,7 +24,7 @@
     #multi-container {
       flex: 1;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       padding: 10px;
       overflow: hidden;
@@ -241,11 +241,15 @@
         ffBtn.textContent = 'Fast Forward';
         ffBtn.className = 'fast-forward-btn';
         ffBtn.onclick = () => {
-          const video = playerDiv.querySelector('video');
-          if (video && video.seekable.length > 0) {
-            video.currentTime = video.seekable.end(0) - 0.1;
-          }
-        };
+  const iframe = document.getElementById(`player-${channel}`);
+  const video = iframe?.querySelector('video');
+  if (video && video.seekable.length > 0) {
+    video.currentTime = video.seekable.end(0) - 0.1;
+    console.log(`[Shadow Script] Fast forwarded ${channel}`);
+  } else {
+    console.log(`[Shadow Script] No video element found for ${channel}`);
+  }
+};
         wrapper.appendChild(ffBtn);
 
         const removeBtn = document.createElement('button');
