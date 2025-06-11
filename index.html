@@ -39,8 +39,8 @@
       aspect-ratio: 16 / 9;
       margin: 0 auto;
       width: 100%;
-      max-width: 48%;
-      flex: 1 1 48%;
+      max-width: 100%;
+      flex: 1 1 100%;
     }
     }
     .twitch-player {
@@ -145,11 +145,22 @@ observer.observe(document.getElementById('multi-container'), { childList: true }
 adjustSinglePlayerLayout();
 function adjustLayout() {
   const allPlayers = document.querySelectorAll('.player-wrapper');
+  const container = document.getElementById('multi-container');
+
   allPlayers.forEach(p => {
     if (allPlayers.length === 1) {
       p.style.maxWidth = '100%';
       p.style.flex = '1 1 100%';
     } else {
+      p.style.maxWidth = '48%';
+      p.style.flex = '1 1 48%';
+    }
+  });
+
+  container.style.justifyContent = 'center';
+  container.style.alignItems = 'center';
+  container.style.alignContent = 'center';
+} else {
       p.style.maxWidth = '48%';
       p.style.flex = '1 1 48%';
     }
