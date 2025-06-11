@@ -127,14 +127,35 @@
       cursor: pointer;
     }
   </style>
-  <script src="https://player.twitch.tv/js/embed/v1.js">  document.getElementById('chat-add-stream').onclick = () => {
+  <script src="https://player.twitch.tv/js/embed/v1.js">  document.getElementById('chat-add-stream').onclick = addStreamFromInput;
+document.getElementById('chat-stream-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addStreamFromInput();
+});
+
+function addStreamFromInput() {
   const chatInput = document.getElementById('chat-stream-input');
   const channel = chatInput.value.trim().toLowerCase();
-  if (channel && !channels.includes(channel)) {
-    channels.push(channel);
-    createPlayer(channel);
-    if (channels.length === 1) chatTabs.firstChild?.click();
+  if (!channel) {
+    alert('Please enter a channel name.');
+    return;
+  }
+  if (channels.includes(channel)) {
+    alert(`Channel "${channel}" is already added.`);
     chatInput.value = '';
+    return;
+  }
+  channels.push(channel);
+  createPlayer(channel);
+  if (channels.length === 1) chatTabs.firstChild?.click();
+  chatInput.value = '';
+  if (!recentHistory.includes(channel)) {
+    recentHistory.unshift(channel);
+    if (recentHistory.length > 10) recentHistory.pop();
+    updateHistoryDropdown();
+  }
+}
+  }
+}
     if (!recentHistory.includes(channel)) {
       recentHistory.unshift(channel);
       if (recentHistory.length > 10) recentHistory.pop();
