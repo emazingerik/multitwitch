@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shadow's MultiTwitch - Low Latency</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .player {
+      flex: 1 1 50%;
+      min-width: 400px;
+      height: 50vh;
+    }
+  </style>
+  <script src="https://player.twitch.tv/js/embed/v1.js"></script>
+</head>
+<body>
+  <script>
+    const channels = window.location.pathname.split('/').filter(Boolean);
+
+    channels.forEach(channel => {
+      const container = document.createElement('div');
+      container.className = 'player';
+      container.id = `player-${channel}`;
+      document.body.appendChild(container);
+
+      const player = new Twitch.Player(container.id, {
+        channel,
+        width: '100%',
+        height: '100%',
+        parent: [location.hostname],
+        muted: true
+      });
+
+      player.addEventListener(Twitch.Player.READY, () => {
+        try {
+          const qualities = player.getQualities();
+          if (qualities && qualities.length > 0) {
+            player.setQuality(qualities[0].group);
+            console.log(`[Shadow Script] Max quality applied to ${channel}`);
+          }
+        } catch (err) {
+          console.warn(`[Shadow Script] Couldn't set quality for ${channel}`, err);
+        }
+
+        setInterval(() => {
+          const video = container.querySelector('video');
+          if (video?.seekable?.length) {
+            const liveEdge = video.seekable.end(0);
+            const delay = liveEdge - video.currentTime;
+            if (delay > 10) {
+              console.log(`[Shadow Script] ${channel} is ${delay.toFixed(1)}s behind. Consider refreshing.`);
+            }
+          }
+        }, 30000);
+      });
+    });
+  </script>
+</body>
+</html>
