@@ -37,8 +37,9 @@
       position: relative;
       border-radius: 8px;
       background: black;
-      flex: 1 1 calc(50% - 20px);
-      max-width: calc(50% - 20px);
+      flex: 1 1 48%;
+      max-width: 48%;
+      margin: 0 auto;
       aspect-ratio: 16 / 9;
     }
     .twitch-player {
@@ -102,7 +103,13 @@
       color: white;
       cursor: pointer;
     }
-  </style>
+  @media (max-width: 1200px) {
+    .player-wrapper {
+      flex: 1 1 100%;
+      max-width: 100%;
+    }
+  }
+</style>
   <script src="https://player.twitch.tv/js/embed/v1.js">function removeStream(channel) {
   channels = channels.filter(c => c !== channel);
 
