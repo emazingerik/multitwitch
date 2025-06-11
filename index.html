@@ -17,17 +17,18 @@
 
     #main {
       display: flex;
-      flex: 1;
+      flex-direction: row;
+      width: 100%;
       height: 100vh;
     }
 
     #multi-container {
       flex: 1;
-      display: grid;
+      display: flex;
+      flex-direction: column;
       padding: 10px;
       gap: 10px;
       overflow-y: auto;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
 
     .player-wrapper {
@@ -35,13 +36,25 @@
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-      display: flex;
-      flex-direction: column;
+      position: relative;
     }
 
     .twitch-player {
       width: 100%;
-      aspect-ratio: 16/9;
+      height: 50vh;
+    }
+
+    .fast-forward-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: #272727;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
     }
 
     #chat-panel {
@@ -75,15 +88,31 @@
       border: none;
       width: 100%;
     }
+
+    #chat-toggle {
+      padding: 5px;
+      font-size: 12px;
+      background: #111;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
   </style>
   <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 </head>
 <body>
+  <script>
+    if (!location.pathname.includes("/multitwitch/")) {
+      const fixed = location.pathname.replace(/\/([^\/]+)$/, "/multitwitch/$1");
+      location.replace(`${fixed}${location.search}${location.hash}`);
+    }
+  </script>
   <div id="main">
     <div id="multi-container"></div>
     <div id="chat-panel">
       <div id="chat-tabs"></div>
       <iframe id="chat-frame" src="" allowfullscreen></iframe>
+      <button id="chat-toggle">Toggle Chat</button>
     </div>
   </div>
 
@@ -91,16 +120,17 @@
     const urlParams = new URLSearchParams(window.location.search);
     let channels = [];
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
-    const baseIndex = pathSegments.indexOf("multitwitch");
+    const multiIndex = pathSegments.indexOf("multitwitch");
     if (urlParams.has('channels')) {
       channels = urlParams.get('channels').split(',');
-    } else if (baseIndex !== -1) {
-      channels = pathSegments.slice(baseIndex + 1);
+    } else if (multiIndex !== -1) {
+      channels = pathSegments.slice(multiIndex + 1);
     }
 
     const container = document.getElementById('multi-container');
     const chatTabs = document.getElementById('chat-tabs');
     const chatFrame = document.getElementById('chat-frame');
+    const chatToggle = document.getElementById('chat-toggle');
 
     function createChatTab(channel) {
       const tab = document.createElement('button');
@@ -114,6 +144,11 @@
       chatTabs.appendChild(tab);
     }
 
+    chatToggle.onclick = () => {
+      const panel = document.getElementById('chat-panel');
+      panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+    }
+
     channels.forEach((channel, i) => {
       const wrapper = document.createElement('div');
       wrapper.className = 'player-wrapper';
@@ -122,6 +157,17 @@
       playerDiv.className = 'twitch-player';
       playerDiv.id = `player-${channel}`;
       wrapper.appendChild(playerDiv);
+
+      const ffBtn = document.createElement('button');
+      ffBtn.textContent = 'Fast Forward';
+      ffBtn.className = 'fast-forward-btn';
+      ffBtn.onclick = () => {
+        const video = playerDiv.querySelector('video');
+        if (video && video.seekable.length > 0) {
+          video.currentTime = video.seekable.end(0) - 0.1;
+        }
+      };
+      wrapper.appendChild(ffBtn);
 
       container.appendChild(wrapper);
 
@@ -152,6 +198,10 @@
             if (delay > 10) {
               console.log(`[Shadow Script] ${channel} is ${delay.toFixed(1)}s behind. Consider refreshing.`);
             }
+
+            // Auto click bonus button if present
+            const bonusBtn = document.querySelector('[data-test-selector="claimable-bonus-button__icon"]');
+            if (bonusBtn) bonusBtn.click();
           }
         }, 30000);
       });
@@ -159,9 +209,8 @@
       createChatTab(channel);
     });
 
-    // Activate first chat tab by default
     if (channels.length > 0) {
-      chatTabs.firstChild.click();
+      chatTabs.firstChild?.click();
     }
   </script>
 </body>
